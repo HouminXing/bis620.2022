@@ -81,4 +81,6 @@ bis620.2023:::create_phase_histogram_plot(studies = studies,
 The links to the test coverage page and R-CMD-check results:  
 [R-CMD-check](https://github.com/HouminXing/bis620.2022/actions/workflows/R-CMD-check.yaml)  
 [Test
-Coverage](https://github.com/HouminXing/bis620.2022/actions/workflows/test-coverage.yaml)
+Coverage](https://github.com/HouminXing/bis620.2022/actions/workflows/test-coverage.yaml)  
+[Calculated Test Coverage
+Score](https://app.codecov.io/gh/HouminXing/bis620.2022)

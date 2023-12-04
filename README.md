@@ -43,3 +43,42 @@ accel |>
 ```
 
 <img src="man/figures/README-example-1.png" width="100%" />
+
+To start our shiny app, please use the following codes:
+
+``` r
+library(bis620.2023)
+start_shiny()
+```
+
+Below are two examples that show some of the visualization features of
+our shiny app:
+
+``` r
+# draw a histogram for trials with different conditions
+data(studies)
+data(conditions)
+bis620.2023:::create_condition_histogram(studies = studies, 
+                                         conditions = conditions,
+                                         sponsor_type = 1, # ALL_SPONSORS
+                                         status_type = 1, # ALL_STATUS
+                                         brief_title_kw = "nash")
+```
+
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />
+
+``` r
+# draw a histogram for trials in different phases
+data(studies)
+bis620.2023:::create_phase_histogram_plot(studies = studies, 
+                                          sponsor_type = "FED", 
+                                          status_type = 1, # ALL_STATUS
+                                          brief_title_kw = "nash")
+```
+
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+
+The links to the test coverage page and R-CMD-check results:  
+[R-CMD-check](https://github.com/HouminXing/bis620.2022/actions/workflows/R-CMD-check.yaml)  
+[Test
+Coverage](https://github.com/HouminXing/bis620.2022/actions/workflows/test-coverage.yaml)

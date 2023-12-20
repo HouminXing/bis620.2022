@@ -1,0 +1,23 @@
+#' Cleaned Data from NCT00089661
+#'
+#' Data for BIS 620 Final Project
+#'
+#' @format ## `df`
+#' A data frame with 96 rows and 14 columns:
+#' \describe{
+#'   \item{SUBJID}{The unique identifier assigned to each patient}
+#'   \item{max_aetoxgr}{The maximun adverse event grade}
+#'   \item{SEX}{Sex}
+#'   \item{age}{Age}
+#'   \item{BMI}{Body Mass Index}
+#'   \item{DIABP}{Diastolic Blood Pressure}
+#'   \item{PULSE}{Pulse Rate}
+#'   \item{SYSBP}{Systolic Blood Pressure}
+#'   \item{RESP}{Respiratory Rate}
+#'   \item{TEMP}{Temperature}
+#'   \item{race}{Race}
+#'   \item{FEMORAL NECK}{Bone mineral density at femoral neck}
+#'   \item{LUMBAR SPINE}{Bone mineral density at lumbar spine}
+#'   \item{TOTAL HIP}{Bone mineral density at total hip}
+#' }
+"df"

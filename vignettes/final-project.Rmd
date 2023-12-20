@@ -1,0 +1,161 @@
+---
+title: "BIS 620 Final Project"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIS 620 Final Project}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Predictive Analysis of the Severity of Adverse Effects in Denosumab Treatment for Breast Cancer
+```{r setup}
+library(bis620.2023)
+```
+
+In this project, we utilized the datasets from the NCT00089661 study (from Project Datasphere website -- [Link](https://data.projectdatasphere.org/projectdatasphere/html/content/153). Study title: "A Randomized, Double-Blind, Placebo-Controlled Study to Evaluate AMG 162 in the Treatment of Bone Loss in Subjects Undergoing Aromatase Inhibitor Therapy for Non-metastatic Breast Cancer". The objective is to forecast the potential severity of adverse effects (the max grade of adverse effects experienced) based on patients' initial body condition metrics. Such predictions could be instrumental for healthcare providers and patients in preemptively managing treatment expectations and outcomes.
+
+## Background Information & Motivation.
+Breast cancer continues to pose significant health challenges globally. Despite advancements in treatment, the quest for optimizing therapeutic strategies remains critical. This analysis focuses on denosumab, an osteoclast inhibitor used in the management of bone metastases in cancer patients. Understanding its adverse effects could significantly impact patient care and treatment customization. The dataset we use comprises exclusively female breast cancer patients. Our analysis is driven by the need to provide actionable insights for healthcare professionals, enabling informed decision-making that could enhance patient quality of life during treatment.
+
+## Research Question
+The primary goal of our research is to predict the potential severity of adverse effects following denosumab treatment based on patients' initial physiological state. By establishing a correlation between pre-treatment body condition and subsequent adverse effects, we aim to aid in the anticipatory management of patient care.
+
+## Data Cleaning and Exploration
+```{r message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+data(avs)
+data(abmdxa)
+data(aae)
+```
+
+#### Data Cleaning
+In our analysis, we first focused on the "avs" dataset. In particular, only the entries labeled as "SCREEN" in the "VISIT" column were retained (since we only need the initial body condition of patients). We observed instances of multiple "SCREEN" records for individual patients identified by "SUBJID". Given the 24-month duration of the study, we computed the mean age of patients. Then, we transformed the dataset from a long to a wide format for better accessibility and analysis. Race was re-encoded as follows: 'WHITE OR CAUCASIAN' to 1, 'HISPANIC OR LATINO' to 2, and all other races to 3. Height and weight variables are removed to address potential multicollinearity problem with the BMI (mean) variable. 
+``` r
+avs = avs |>
+  filter(VISIT == "SCREEN") |>
+  select(SUBJID, AGEY, SEX, RACE, VSTESTCD, VSSTRESN) |>
+  group_by(SUBJID) |>
+  mutate(age = round(mean(AGEY))) |>
+  ungroup() |>
+  select(-AGEY)
+
+avs = avs |>
+  pivot_wider(names_from = VSTESTCD, values_from = VSSTRESN)
+
+avs = avs |>
+  mutate(race = case_when(
+    RACE == "WHITE OR CAUCASIAN" ~ 1,
+    RACE == "HISPANIC OR LATINO" ~ 2,
+    RACE == "OTHER" ~ 3,
+  )) |>
+  select(-RACE)
+
+avs = avs |> select(-HEIGHT, -WEIGHT)
+```
+
+Bone density was calculated in the "abmdxa" dataset by dividing 'DXABMCB(g)' by 'DXAAREA(cm^2)', and we categorized bone measurements into NECK, SPINE, and HIP. 
+``` r
+abmdxa = abmdxa |>
+  select(SUBJID, BMLOC, DXABMCB, DXAAREAB) |>
+  mutate(daxbmd = DXABMCB / DXAAREAB) |> 
+  distinct() |> 
+  select(-DXABMCB, -DXAAREAB) |>
+  pivot_wider(names_from = BMLOC, values_from = daxbmd)
+```
+
+Lastly, we examined the "AETOXGR" (standard toxicity grade) column in the "aae" dataset to determine the level of adverse effects, selecting the highest toxicity grade recorded for each patient to ensure the study's focus on the most severe outcomes. (If the missing data of one patient is greater than 8, then we ignore this patient.)
+``` r
+aae = aae |>
+  select(SUBJID, AETOXGR) |>
+  group_by(SUBJID) |>
+  mutate(max_aetoxgr = max(AETOXGR)) |>
+  select(-AETOXGR) |>
+  distinct()
+```
+
+``` r
+# create "df" that will be used in model fitting
+df = left_join(aae, avs, by = "SUBJID") |>
+  left_join(abmdxa, by = "SUBJID")
+
+df <- df[rowSums(is.na(df)) <= 8, ]
+
+changed_columns = c("age", "BMI", "DIABP", "PULSE", "SYSBP", "RESP", "TEMP", "FEMORAL NECK", "LUMBAR SPINE", "TOTAL HIP")
+
+# replace NAs in numeric columns with column mean
+for (col in changed_columns) {
+  col_mean <- mean(df[[col]], na.rm = TRUE)
+  df[[col]][is.na(df[[col]])] <- col_mean
+}
+```
+
+#### Exploration (EDA)
+In this section, we created some distribution plots for a subset of our variables. Concerning the variable "max_aetoxgr", the majority of observations center around Grade 2. This suggests that the overall severity of adverse events related to denosumab under aromatase inhibitor treatment is relatively moderate. Furthermore, the age range of patients in the dataset spans from 50 to 70 years, with data clustering observed at both extremes. Additionally, the distribution of BMI is slightly skewed to the right.
+```{r warning=FALSE}
+data(df)
+variables = c("max_aetoxgr", "age", "BMI", "FEMORAL_NECK", "LUMBAR_SPINE", 
+              "TOTAL_HIP")
+data = df
+
+for(var in variables) {
+
+  if(is.numeric(data[[var]])) {
+
+    p <- ggplot(data, aes(x = .data[[var]])) +
+         geom_histogram(bins = 20, fill = "skyblue", color="black") +
+         labs(title = paste("Histogram of", var), x = var, y = "Frequency") +
+         theme_minimal() +
+         theme(plot.title = element_text(size = 10))
+  } else {
+
+    p <- ggplot(data, aes(x = .data[[var]])) +
+         geom_bar(fill = "skyblue", color="black") +
+         labs(title = paste("Bar Plot of", var), x = var, y = "Count") +
+         theme_minimal() +
+         theme(plot.title = element_text(size = 10))
+  }
+  print(p)
+}
+
+```
+
+
+## Statistical Experiment Analysis
+Our group decided to fit a multiclass classification model using the random forest algorithm.
+```{r message=FALSE}
+library(caret)
+library(randomForest)
+data(df) # load the cleaned data frame (should be the same as the "df" above)
+```
+
+```{r}
+df3 = df
+model_results = ae_prediction(input_df = df3)
+
+# print the model summary
+print(model_results$model_summary)
+```
+
+```{r}
+# display the confusion matrix
+model_results$confusion_matrix
+```
+
+```{r}
+# show the calculated feature_importance
+model_results$feature_importance
+```
+
+
+## Interpretation and Conclusions
+From the feature importance results above, we can see that the first four most important varaibles in our random forest model are "BMI", "FEMORAL_NECK", "LUMBAR_SPINE", and "TOTAL_HIP". This outcome is consistent with our expectations. Individuals with higher bone densities in various body parts (for instance, neck, spine, and hip) are less prone to experiencing osteoporosis-related adverse events, while patients with abnormal BMI values are more likely to develop such adverse events. \
+However, there are still some flaws within our random forest model. First, we have a fairly good classification accuracy, which might be mainly due to the small cohort of our data sample (less than 100 patients). Besides, the data we used in this project contains only the patients information at the time of screening. Thus, we can try using data from different experiment time points to enrich our dataset and refine our algorithm.

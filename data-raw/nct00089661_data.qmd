@@ -1,0 +1,103 @@
+---
+title: "620_Final_Project_Yi Ren"
+format: html
+---
+
+```{r}
+library(haven)
+library(purrr)
+
+trial_path = file.path("NCT00089661")
+trial_files = list.files(trial_path, pattern = "*.sas7bdat")
+
+# return a list
+dl = map(file.path(trial_path, trial_files), ~ read_sas(.x))
+names(dl) = gsub("*.sas7bdat", "", trial_files)
+```
+
+```{r}
+library(dplyr)
+avs = dl$avs
+avs = avs |>
+  select(VISIT, SUBJID, AGEY, SEX, RACE, VSTESTCD, VSSTRESN)
+
+usethis::use_data(avs, overwrite = TRUE)
+```
+
+```{r}
+library(tidyr)
+avs = avs |>
+  filter( VISIT == "SCREEN") |>
+  select(SUBJID, AGEY, SEX, RACE, VSTESTCD, VSSTRESN) |>
+  group_by(SUBJID) |>
+  mutate(age = round(mean(AGEY))) |>
+  ungroup() |>
+  select(-AGEY)
+
+avs = avs |>
+  pivot_wider(names_from = VSTESTCD, values_from = VSSTRESN)
+
+avs = avs |>
+  mutate(race = case_when(
+    RACE == "WHITE OR CAUCASIAN" ~ 1,
+    RACE == "HISPANIC OR LATINO" ~ 2,
+    RACE == "OTHER" ~ 3,
+  )) |>
+  select(-RACE)
+
+avs = avs |> select(-HEIGHT, -WEIGHT)
+```
+
+```{r}
+abmdxa = dl$abmdxa
+
+abmdxa = abmdxa |>
+  select(SUBJID, BMLOC, DXABMCB, DXAAREAB)
+
+usethis::use_data(abmdxa, overwrite = TRUE)
+
+abmdxa = abmdxa |>
+  mutate(daxbmd = DXABMCB / DXAAREAB) |> 
+  distinct() |> 
+  select(-DXABMCB, -DXAAREAB) |>
+  pivot_wider(names_from = BMLOC, values_from = daxbmd)
+```
+
+```{r}
+aae = dl$aae |>
+  select(SUBJID, AETOXGR)
+
+usethis::use_data(aae, overwrite = TRUE)
+
+aae = aae |> 
+  group_by(SUBJID) |>
+  mutate(max_aetoxgr = max(AETOXGR)) |>
+  select(-AETOXGR) |>
+  distinct()
+```
+
+```{r}
+df = left_join(aae, avs, by = "SUBJID") |>
+  left_join(abmdxa, by = "SUBJID")
+
+df <- df[rowSums(is.na(df)) <= 8, ]
+
+# rename for convenience
+colnames(df)[12] = "FEMORAL_NECK"
+colnames(df)[13] = "LUMBAR_SPINE"
+colnames(df)[14] = "TOTAL_HIP"
+
+changed_columns = c("age", "BMI", "DIABP", "PULSE", "SYSBP", "RESP", "TEMP", "FEMORAL_NECK", "LUMBAR_SPINE", "TOTAL_HIP")
+
+for (col in changed_columns) {
+  col_mean <- mean(df[[col]], na.rm = TRUE)
+  df[[col]][is.na(df[[col]])] <- col_mean
+}
+
+df$max_aetoxgr = factor(df$max_aetoxgr)
+df$SEX = factor(df$SEX)
+df$race = factor(df$race)
+df = df |> ungroup()
+
+usethis::use_data(df, overwrite = TRUE)
+```

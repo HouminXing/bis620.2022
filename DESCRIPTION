@@ -7,7 +7,7 @@ Maintainer: The package maintainers
             <houmin.xing@yale.edu>, 
             <yiran.liu.yl2597@yale.edu>, 
             <y.ren@yale.edu>
-Description: Functions and data captured for BIS 620 Midterm Project and HW3.
+Description: Functions and data captured for BIS 620 Midterm Project, HW3, and Final Project.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
@@ -25,7 +25,9 @@ Imports:
   wordcloud2,
   tm,
   countrycode,
-  rworldmap
+  rworldmap,
+  caret,
+  randomForest
 Suggests: 
     knitr,
     rmarkdown,

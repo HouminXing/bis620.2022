@@ -39,7 +39,7 @@ data(aae)
 
 #### Data Cleaning
 In our analysis, we first focused on the "avs" dataset. In particular, only the entries labeled as "SCREEN" in the "VISIT" column were retained (since we only need the initial body condition of patients). We observed instances of multiple "SCREEN" records for individual patients identified by "SUBJID". Given the 24-month duration of the study, we computed the mean age of patients. Then, we transformed the dataset from a long to a wide format for better accessibility and analysis. Race was re-encoded as follows: 'WHITE OR CAUCASIAN' to 1, 'HISPANIC OR LATINO' to 2, and all other races to 3. Height and weight variables are removed to address potential multicollinearity problem with the BMI (mean) variable. 
-``` r
+```{r}
 avs = avs |>
   filter(VISIT == "SCREEN") |>
   select(SUBJID, AGEY, SEX, RACE, VSTESTCD, VSSTRESN) |>
@@ -63,7 +63,7 @@ avs = avs |> select(-HEIGHT, -WEIGHT)
 ```
 
 Bone density was calculated in the "abmdxa" dataset by dividing 'DXABMCB(g)' by 'DXAAREA(cm^2)', and we categorized bone measurements into NECK, SPINE, and HIP. 
-``` r
+```{r}
 abmdxa = abmdxa |>
   select(SUBJID, BMLOC, DXABMCB, DXAAREAB) |>
   mutate(daxbmd = DXABMCB / DXAAREAB) |> 
@@ -73,7 +73,7 @@ abmdxa = abmdxa |>
 ```
 
 Lastly, we examined the "AETOXGR" (standard toxicity grade) column in the "aae" dataset to determine the level of adverse effects, selecting the highest toxicity grade recorded for each patient to ensure the study's focus on the most severe outcomes. (If the missing data of one patient is greater than 8, then we ignore this patient.)
-``` r
+```{r}
 aae = aae |>
   select(SUBJID, AETOXGR) |>
   group_by(SUBJID) |>
@@ -82,7 +82,7 @@ aae = aae |>
   distinct()
 ```
 
-``` r
+```{r}
 # create "df" that will be used in model fitting
 df = left_join(aae, avs, by = "SUBJID") |>
   left_join(abmdxa, by = "SUBJID")

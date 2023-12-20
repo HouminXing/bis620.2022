@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
 <script src="pkgdown.js"></script><meta property="og:title" content="HW3 Functions and Data for the BIS620 (2023) Class">
-<meta property="og:description" content="Functions and data captured for BIS 620 Midterm Project and HW3.">
+<meta property="og:description" content="Functions and data captured for BIS 620 Midterm Project, HW3, and Final Project.">
 <!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
@@ -50,6 +50,9 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
+      <a href="articles/BIS%20620%20Final%20Project.html">BIS 620 Final Project</a>
+    </li>
+    <li>
       <a href="articles/spectral-signatures.html">Spectral Signatures</a>
     </li>
   </ul>
@@ -92,6 +95,30 @@
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="reference/plot_accel.html">plot_accel</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-example-1.png" width="100%"></p>
+<p>To start our shiny app, please use the following codes:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">bis620.2023</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/start_shiny.html">start_shiny</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Below are two examples that show some of the visualization features of our shiny app:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># draw a histogram for trials with different conditions</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">conditions</span><span class="op">)</span></span>
+<span><span class="fu">bis620.2023</span><span class="fu">:::</span><span class="fu"><a href="reference/create_condition_histogram.html">create_condition_histogram</a></span><span class="op">(</span>studies <span class="op">=</span> <span class="va">studies</span>, </span>
+<span>                                         conditions <span class="op">=</span> <span class="va">conditions</span>,</span>
+<span>                                         sponsor_type <span class="op">=</span> <span class="fl">1</span>, <span class="co"># ALL_SPONSORS</span></span>
+<span>                                         status_type <span class="op">=</span> <span class="fl">1</span>, <span class="co"># ALL_STATUS</span></span>
+<span>                                         brief_title_kw <span class="op">=</span> <span class="st">"nash"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-2-1.png" width="100%"></p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># draw a histogram for trials in different phases</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">studies</span><span class="op">)</span></span>
+<span><span class="fu">bis620.2023</span><span class="fu">:::</span><span class="fu"><a href="reference/create_phase_histogram_plot.html">create_phase_histogram_plot</a></span><span class="op">(</span>studies <span class="op">=</span> <span class="va">studies</span>, </span>
+<span>                                          sponsor_type <span class="op">=</span> <span class="st">"FED"</span>, </span>
+<span>                                          status_type <span class="op">=</span> <span class="fl">1</span>, <span class="co"># ALL_STATUS</span></span>
+<span>                                          brief_title_kw <span class="op">=</span> <span class="st">"nash"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-3-1.png" width="100%"></p>
+<p>The links to the test coverage page and R-CMD-check results:<br><a href="https://github.com/HouminXing/bis620.2022/actions/workflows/R-CMD-check.yaml" class="external-link">R-CMD-check</a><br><a href="https://github.com/HouminXing/bis620.2022/actions/workflows/test-coverage.yaml" class="external-link">Test Coverage</a><br><a href="https://app.codecov.io/gh/HouminXing/bis620.2022" class="external-link">Calculated Test Coverage Score</a></p>
 </div>
 </div>
   </div>
